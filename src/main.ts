@@ -83,7 +83,7 @@ async function run(): Promise<void> {
     output.push(output1)
 
     core.info(output1.toString())
-    if (output1.toString() === 'changed') {
+    if ([output1.toString()].includes('changed')) {
       core.info('Step 8: Deleting Previous Branches')
       output.push(
         execSync(
