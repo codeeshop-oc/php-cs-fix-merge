@@ -7,7 +7,6 @@ import {execSync} from 'child_process'
 
 interface DataFile {
   sha: string
-  type: 'unknown'
 }
 
 interface ENVS {
@@ -137,7 +136,11 @@ async function addChanges(
           ref: branch
         })
 
-        const sha = (data as DataFile).type
+        const sha = (data as DataFile).sha
+
+        core.info('sha')
+        core.info(sha)
+        core.info(JSON.stringify(data as DataFile))
 
         await octokit.repos.createOrUpdateFileContents({
           owner,

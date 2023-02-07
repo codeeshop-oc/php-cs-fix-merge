@@ -68,7 +68,6 @@ const fs = __importStar(__nccwpck_require__(5747));
 const github = __importStar(__nccwpck_require__(5438));
 const inputs_1 = __importDefault(__nccwpck_require__(6180));
 const child_process_1 = __nccwpck_require__(3129);
-;
 const config = {};
 config.username = core.getInput(inputs_1.default.username);
 config.email = core.getInput(inputs_1.default.email);
@@ -137,7 +136,10 @@ function addChanges(owner, repo, branch) {
                         path: file,
                         ref: branch
                     });
-                    const sha = data.type;
+                    const sha = data.sha;
+                    core.info('sha');
+                    core.info(sha);
+                    core.info(JSON.stringify(data));
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
