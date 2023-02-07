@@ -198,9 +198,16 @@ async function createReference(
   owner: string,
   repo: string,
   ref: string,
+  branch: string,
   sha: string
 ): Promise<void> {
   try {
+    await octokit.git.deleteRef({
+      owner,
+      repo,
+      ref: `heads/${branch}`
+    })
+
     await octokit.git.createRef({
       owner,
       repo,
@@ -230,6 +237,7 @@ async function pushCommitAndMergePR(
   await createReference(
     owner,
     repo,
+    branch,
     `refs/heads/${branch}`,
     (
       await octokit.repos.getBranch({
