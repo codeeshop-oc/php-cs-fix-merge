@@ -10,12 +10,12 @@ See [action.yml](./action.yml)
 
 **Basic:**
 ```yaml
-- uses: codeeshop-oc/php-cs-fix-merge@0.0.3  
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.0  
 ```
 
 **Full:**
 ```yaml
-- uses: codeeshop-oc/php-cs-fix-merge@0.0.3
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.0
   with: 
     username: codeeshop-oc
     email: github-action[bot]@users.noreply.github.com

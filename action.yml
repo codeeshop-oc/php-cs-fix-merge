@@ -1,0 +1,46 @@
+name: 'PHP CS Fix, Push & Merge'
+description: 'PHP CS Fix, Push & Merge'
+author: 'Anant Negi'
+branding:
+  icon: file-text
+  color: gray-dark
+inputs:
+  username:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: ${{ github.repository_owner }}
+    required: false
+  email:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: 'github-action[bot]@users.noreply.github.com'
+    required: false
+  temp_branch_name:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: 'php-cs-fix'
+    required: false
+  master_branch_name:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: ${{ github.ref_name }}
+    required: false
+  commit_message:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: 'Automated Bot Deployment'
+    required: false
+  pull_title:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: 'Automated Bot Deployment'
+    required: false
+  pull_body:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: 'Update PH CS Fix Files'
+    required: false
+  assignee:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: ${{ github.repository_owner }}
+    required: false
+  reviewer:
+    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    default: ${{ github.repository_owner }}
+    required: false
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
