@@ -139,7 +139,15 @@ function addChanges(owner, repo, branch) {
                     const sha = data.sha;
                     core.info('sha');
                     core.info(sha);
-                    core.info(JSON.stringify(data));
+                    core.info(JSON.stringify({
+                        owner,
+                        repo,
+                        path: file,
+                        message: `Fixed ${file} using php-cs-fixer`,
+                        content: Buffer.from(fs.readFileSync(file).toString(), 'utf-8').toString('base64'),
+                        sha,
+                        branch
+                    }));
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
@@ -219,15 +227,15 @@ function pushCommitAndMergePR(branch, message) {
         })).data.commit.sha);
         addChanges(owner, repo, branch);
         // 2. Create a new file in the branch
-        const content = Buffer.from(message).toString('base64');
-        yield octokit.repos.createOrUpdateFileContents({
-            owner,
-            repo,
-            path: `${branch}/newfile.txt`,
-            message: `Add new file: ${branch}/newfile.txt ${new Date().toTimeString()}`,
-            content,
-            branch
-        });
+        // const content = Buffer.from(message).toString('base64')
+        // await octokit.repos.createOrUpdateFileContents({
+        //   owner,
+        //   repo,
+        //   path: `${branch}/newfile.txt`,
+        //   message: `Add new file: ${branch}/newfile.txt ${new Date().toTimeString()}`,
+        //   content,
+        //   branch
+        // })
         // 3. Create a pull request to merge the branch
         const pullRequest = (yield octokit.pulls.create({
             owner,
