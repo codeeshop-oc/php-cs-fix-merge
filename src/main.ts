@@ -15,7 +15,6 @@ interface ENVS {
   reviewer: string
   repository: string
   github_token: string
-  github_actor: string
 }
 
 export type ConfigEnv = Pick<
@@ -31,7 +30,6 @@ export type ConfigEnv = Pick<
   | 'reviewer'
   | 'repository'
   | 'github_token'
-  | 'github_actor'
 >
 
 async function run(): Promise<void> {
@@ -49,7 +47,6 @@ async function run(): Promise<void> {
     config.reviewer = core.getInput(INPUTS.reviewer)
     config.repository = core.getInput(INPUTS.repository)
     config.github_token = core.getInput(INPUTS.github_token)
-    config.github_actor = core.getInput(INPUTS.github_actor)
 
     const output = []
 
@@ -93,11 +90,12 @@ async function run(): Promise<void> {
 
     if (output1.toString()) {
       core.info('Step 8: Deleting Previous Branches')
-      const branch_url = `https://${config.github_actor}:${config.github_token}@github.com/${config.repository}.git`
       output.push(
         execSync(
-          `git branch -D ${config.temp_branch_name} || echo
-         git push ${branch_url} ${config.temp_branch_name} || echo`
+          `git remote add target https://${config.github_token}@github.com/${config.username}/${config.repository}.git
+          git fetch target
+          git branch -D ${config.temp_branch_name} || echo
+          git push -d target ${config.temp_branch_name} || echo`
         )
       )
 
@@ -108,7 +106,7 @@ async function run(): Promise<void> {
       output.push(
         execSync(
           `git commit -m "${config.commit_message}"
-          git push -u origin ${config.temp_branch_name}`
+          git push target ${config.temp_branch_name}`
         )
       )
 

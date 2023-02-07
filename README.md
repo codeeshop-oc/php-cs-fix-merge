@@ -73,10 +73,6 @@ repository:
   required: false
 github_token:
   description: 'Github Token, defaults to context secrets.GITHUB_TOKEN if omited'
-  default: ${{ secrets.GITHUB_TOKEN }}
-  required: false
-github_actor:
-  description: 'Github Token, defaults to context secrets.GITHUB_ACTOR if omited'
-  default: ${{ secrets.GITHUB_ACTOR }}
+  default: ${{ github.token }}
   required: false
 ```

@@ -19,8 +19,7 @@ exports.INPUTS = {
     assignee: 'assignee',
     reviewer: 'reviewer',
     repository: 'repository',
-    github_token: 'github_token',
-    github_actor: 'github_actor'
+    github_token: 'github_token'
 };
 exports.default = exports.INPUTS;
 
@@ -82,7 +81,6 @@ function run() {
             config.reviewer = core.getInput(inputs_1.default.reviewer);
             config.repository = core.getInput(inputs_1.default.repository);
             config.github_token = core.getInput(inputs_1.default.github_token);
-            config.github_actor = core.getInput(inputs_1.default.github_actor);
             const output = [];
             core.info('Step 1: Create composer.json');
             output.push((0, child_process_1.execSync)(`echo '{"name":"prestashop/phpcs","description":"Test","license":"MIT","autoload":{"psr-4":{"Prestashop\\\\\\\\Phpcs\\\\\\\\":"src/"}},"authors":[{"name":"Anant","email":"anantnegi8@gmail.com"}],"require":{}}' > composer.json | echo 'File composer.json Created.'`).toString());
@@ -105,14 +103,15 @@ function run() {
             output.push(output1);
             if (output1.toString()) {
                 core.info('Step 8: Deleting Previous Branches');
-                const branch_url = `https://${config.github_actor}:${config.github_token}@github.com/${config.repository}.git`;
-                output.push((0, child_process_1.execSync)(`git branch -D ${config.temp_branch_name} || echo
-         git push ${branch_url} ${config.temp_branch_name} || echo`));
+                output.push((0, child_process_1.execSync)(`git remote add target https://${config.github_token}@github.com/${config.username}/${config.repository}.git
+          git fetch target
+          git branch -D ${config.temp_branch_name} || echo
+          git push -d target ${config.temp_branch_name} || echo`));
                 core.info('Step 9: Setting Branch to Temp Branch Name');
                 output.push((0, child_process_1.execSync)(`git checkout -b ${config.temp_branch_name}`));
                 core.info('Step 10: Push Commit');
                 output.push((0, child_process_1.execSync)(`git commit -m "${config.commit_message}"
-          git push -u origin ${config.temp_branch_name}`));
+          git push target ${config.temp_branch_name}`));
                 core.info('Step 11: Merging');
                 output.push((0, child_process_1.execSync)(`git checkout ${config.master_branch_name}
         gh repo set-default ${config.username}
