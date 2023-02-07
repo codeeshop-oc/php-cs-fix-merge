@@ -79,6 +79,7 @@ config.assignee = core.getInput(inputs_1.default.assignee);
 config.reviewer = core.getInput(inputs_1.default.reviewer);
 config.repository = core.getInput(inputs_1.default.repository);
 config.github_token = core.getInput(inputs_1.default.github_token);
+const octokit = github.getOctokit(config.github_token).rest;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -104,7 +105,7 @@ function run() {
             output.push(output1);
             if (output1.toString()) {
                 core.info('Step 8: All');
-                yield pushCommitAndMergePR(config.github_token, config.temp_branch_name, config.commit_message);
+                yield pushCommitAndMergePR(config.temp_branch_name, config.commit_message);
             }
             for (const step of output) {
                 core.info(step.toString());
@@ -117,26 +118,57 @@ function run() {
         }
     });
 }
-function pushCommitAndMergePR(repoToken, branch, message) {
+function updateReference(repo, ref, sha) {
     return __awaiter(this, void 0, void 0, function* () {
-        const octokit = github.getOctokit(repoToken).rest;
+        try {
+            yield octokit.git.updateRef({
+                owner: 'OWNER',
+                repo,
+                ref,
+                sha,
+                force: true
+            });
+            core.info(`Reference updated: ${ref}`);
+        }
+        catch (error) {
+            core.info(error.message);
+        }
+    });
+}
+function createReference(owner, repo, ref, sha) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            yield octokit.git.createRef({
+                owner,
+                repo,
+                ref,
+                sha
+            });
+            core.info(`Reference created: ${ref}`);
+        }
+        catch (error) {
+            if (error.message.includes('Reference already exists')) {
+                core.info(`Reference already exists: ${ref}`);
+                yield updateReference(repo, ref, sha);
+            }
+            else {
+                core.info(error.message);
+            }
+        }
+    });
+}
+function pushCommitAndMergePR(branch, message) {
+    return __awaiter(this, void 0, void 0, function* () {
         const context = github.context;
         const owner = context.repo.owner;
         const repo = context.repo.repo;
-        core.info('=> repoToken');
-        core.info(repoToken);
         core.info(message);
         // 1. Create a new branch
-        yield octokit.git.createRef({
+        yield createReference(owner, repo, `refs/heads/${branch}`, (yield octokit.repos.getBranch({
             owner,
             repo,
-            ref: `refs/heads/${branch}`,
-            sha: (yield octokit.repos.getBranch({
-                owner,
-                repo,
-                branch: config.master_branch_name
-            })).data.commit.sha
-        });
+            branch: config.master_branch_name
+        })).data.commit.sha);
         // 2. Create a new file in the branch
         const content = Buffer.from(message).toString('base64');
         yield octokit.repos.createOrUpdateFileContents({
