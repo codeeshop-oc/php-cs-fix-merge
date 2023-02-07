@@ -7,8 +7,8 @@
   echo  "here";
 
 
-  $a = array('herer', 'now', 'welcome') ; 
-  $b = array('herer',    'now'  ,    'welcome') ;  
+  $a = array('herer', 'now', 'welcome') ;
+  $b = array('herer',    'now'  ,    'welcome') ;
   $c = [
     'herer '   ,
   'now' ,
