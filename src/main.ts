@@ -89,6 +89,10 @@ async function run(): Promise<void> {
     output.push(output1)
 
     if (output1.toString()) {
+      core.info(`${config.repository}`)
+      core.info(
+        `https://${config.github_token}@github.com/${config.repository}.git`
+      )
       core.info('Step 8: Deleting Previous Branches')
       output.push(
         execSync(
