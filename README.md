@@ -31,6 +31,10 @@ See [action.yml](./action.yml)
 #Inputs
 
 ```yaml
+github_token:
+  description: 'Github Token with commit access'
+  default: ${{ github.token }}
+  required: false
 username:
   description: 'Username of user, defaults to context github.repository_owner if omited'
   default: ${{ github.repository_owner }}
@@ -70,9 +74,5 @@ reviewer:
 repository:
   description: 'Repository, defaults to context github.repository if omited'
   default: ${{ github.repository }}
-  required: false
-github_token:
-  description: 'Github Token, defaults to context secrets.GITHUB_TOKEN if omited'
-  default: ${{ github.token }}
   required: false
 ```

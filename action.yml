@@ -46,9 +46,8 @@ inputs:
     default: ${{ github.repository }}
     required: false
   github_token:
-    description: 'Github Token, defaults to context github.token if omited'
-    default: ${{ github.token }}
-    required: false
+    description: 'Github Token with commit access'
+    required: true  
 runs:
   using: 'node16'
   main: 'dist/index.js'
