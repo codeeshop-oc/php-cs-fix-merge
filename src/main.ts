@@ -47,6 +47,8 @@ config.reviewer = core.getInput(INPUTS.reviewer)
 config.repository = core.getInput(INPUTS.repository)
 config.github_token = core.getInput(INPUTS.github_token)
 
+const octokit = github.getOctokit(config.github_token).rest
+
 async function run(): Promise<void> {
   try {
     const output = []
@@ -91,11 +93,7 @@ async function run(): Promise<void> {
 
     if (output1.toString()) {
       core.info('Step 8: All')
-      await pushCommitAndMergePR(
-        config.github_token,
-        config.temp_branch_name,
-        config.commit_message
-      )
+      await pushCommitAndMergePR(config.temp_branch_name, config.commit_message)
     }
 
     for (const step of output) {
@@ -108,31 +106,70 @@ async function run(): Promise<void> {
   }
 }
 
+async function updateReference(
+  repo: string,
+  ref: string,
+  sha: string
+): Promise<void> {
+  try {
+    await octokit.git.updateRef({
+      owner: 'OWNER',
+      repo,
+      ref,
+      sha,
+      force: true
+    })
+    core.info(`Reference updated: ${ref}`)
+  } catch (error) {
+    core.info((error as Error).message)
+  }
+}
+
+async function createReference(
+  owner: string,
+  repo: string,
+  ref: string,
+  sha: string
+): Promise<void> {
+  try {
+    await octokit.git.createRef({
+      owner,
+      repo,
+      ref,
+      sha
+    })
+    core.info(`Reference created: ${ref}`)
+  } catch (error) {
+    if ((error as Error).message.includes('Reference already exists')) {
+      core.info(`Reference already exists: ${ref}`)
+      await updateReference(repo, ref, sha)
+    } else {
+      core.info((error as Error).message)
+    }
+  }
+}
+
 async function pushCommitAndMergePR(
-  repoToken: string,
   branch: string,
   message: string
 ): Promise<void> {
-  const octokit = github.getOctokit(repoToken).rest
   const context = github.context
   const owner = context.repo.owner
   const repo = context.repo.repo
-  core.info('=> repoToken')
-  core.info(repoToken)
   core.info(message)
   // 1. Create a new branch
-  await octokit.git.createRef({
+  await createReference(
     owner,
     repo,
-    ref: `refs/heads/${branch}`,
-    sha: (
+    `refs/heads/${branch}`,
+    (
       await octokit.repos.getBranch({
         owner,
         repo,
         branch: config.master_branch_name
       })
     ).data.commit.sha
-  })
+  )
 
   // 2. Create a new file in the branch
   const content = Buffer.from(message).toString('base64')
