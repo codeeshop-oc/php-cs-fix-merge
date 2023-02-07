@@ -84,12 +84,6 @@ const octokit = github.getOctokit(config.github_token).rest;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            // core.info('Step 7: Check - Something To Commit ?')
-            // const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
-            // output.push(output1)
-            // if (output1.toString()) {
-            //   core.info('Step 8: All')
-            // }
             yield pushCommitAndMergePR(config.temp_branch_name, config.commit_message);
             core.setOutput('time', new Date().toTimeString());
         }
@@ -129,7 +123,6 @@ function addChanges(owner, repo, branch) {
                 .filter(Boolean);
             if (changedFiles.length > 0) {
                 // Commit and push the changes
-                core.info(`File updated working till now`);
                 for (const file of changedFiles) {
                     const { data } = yield octokit.repos.getContent({
                         owner,
@@ -150,20 +143,18 @@ function addChanges(owner, repo, branch) {
                         branch
                     });
                     // core.info(`File updated: ${data.commit.sha}`)
-                    core.info(`File updated`);
                     files_to_change = true;
                 }
             }
             else {
                 core.info(`No files changed`);
             }
-            // for (const step of output) {
-            //   core.info(step.toString())
-            // }
-            // process.exit(0)
         }
         catch (error) {
             core.info(error.message);
+        }
+        if (files_to_change) {
+            core.info(`Files updated in commit`);
         }
         return files_to_change;
     });
@@ -188,11 +179,12 @@ function updateReference(repo, ref, sha) {
 function createReference(owner, repo, ref, branch, sha) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            yield octokit.git.deleteRef({
+            const data = yield octokit.git.deleteRef({
                 owner,
                 repo,
-                ref: `heads/${branch}`,
+                ref: `heads/${branch}`
             });
+            core.info(JSON.stringify(data));
             yield octokit.git.createRef({
                 owner,
                 repo,
