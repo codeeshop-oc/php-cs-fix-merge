@@ -134,7 +134,7 @@ function addChanges(owner, repo, branch) {
                         owner,
                         repo,
                         path: file,
-                        ref: config.master_branch_name
+                        ref: branch
                     });
                     const sha = data.sha;
                     core.info('sha');
@@ -216,7 +216,7 @@ function pushCommitAndMergePR(branch, message) {
             repo,
             branch: config.master_branch_name
         })).data.commit.sha);
-        yield addChanges(owner, repo, branch);
+        addChanges(owner, repo, branch);
         // 2. Create a new file in the branch
         // const content = Buffer.from(message).toString('base64')
         // await octokit.repos.createOrUpdateFileContents({

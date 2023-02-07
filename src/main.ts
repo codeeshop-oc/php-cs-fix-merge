@@ -133,7 +133,7 @@ async function addChanges(
           owner,
           repo,
           path: file,
-          ref: config.master_branch_name
+          ref: branch
         })
 
         const sha = (data as DataFile).sha
@@ -235,7 +235,7 @@ async function pushCommitAndMergePR(
     ).data.commit.sha
   )
 
-  await addChanges(owner, repo, branch)
+  addChanges(owner, repo, branch)
 
   // 2. Create a new file in the branch
   // const content = Buffer.from(message).toString('base64')
