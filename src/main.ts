@@ -92,7 +92,7 @@ async function run(): Promise<void> {
       core.info('Step 8: Deleting Previous Branches')
       output.push(
         execSync(
-          `git remote add target https://${config.github_token}@github.com/${config.username}/${config.repository}.git
+          `git remote add target https://${config.github_token}@github.com/${config.repository}.git
           git fetch target
           git branch -D ${config.temp_branch_name} || echo
           git push -d target ${config.temp_branch_name} || echo`
