@@ -80,6 +80,7 @@ function run() {
             config.assignee = core.getInput(inputs_1.default.assignee);
             config.reviewer = core.getInput(inputs_1.default.reviewer);
             const output = [];
+            core.info(`${config.temp_branch_name}`);
             core.info('Step 1: Create composer.json');
             output.push((0, child_process_1.execSync)(`echo '{"name":"prestashop/phpcs","description":"Test","license":"MIT","autoload":{"psr-4":{"Prestashop\\\\\\\\Phpcs\\\\\\\\":"src/"}},"authors":[{"name":"Anant","email":"anantnegi8@gmail.com"}],"require":{}}' > composer.json | echo 'File composer.json Created.'`).toString());
             core.info('Step 2: Validate composer.json and composer.lock');
@@ -114,8 +115,8 @@ function run() {
             }
             for (const step of output) {
                 core.info(step.toString());
-                core.info(typeof step);
             }
+            core.info(JSON.stringify(output));
             core.setOutput('time', new Date().toTimeString());
         }
         catch (error) {

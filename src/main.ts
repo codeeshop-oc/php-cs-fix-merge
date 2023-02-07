@@ -48,6 +48,7 @@ async function run(): Promise<void> {
 
     const output = []
 
+    core.info(`${config.temp_branch_name}`)
     core.info('Step 1: Create composer.json')
     output.push(
       execSync(
@@ -117,8 +118,9 @@ async function run(): Promise<void> {
 
     for (const step of output) {
       core.info(step.toString())
-      core.info(typeof step)
     }
+
+    core.info(JSON.stringify(output))
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
