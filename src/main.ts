@@ -123,6 +123,7 @@ async function addChanges(
 
     if (changedFiles.length > 0) {
       // Commit and push the changes
+      core.info(`File updated working till now`)
       for (const file of changedFiles) {
         await octokit.repos.createOrUpdateFileContents({
           owner,
@@ -136,7 +137,10 @@ async function addChanges(
           branch
         })
         // core.info(`File updated: ${data.commit.sha}`)
+        core.info(`File updated`)
       }
+    } else {
+      core.info(`No files changed`)
     }
 
     // for (const step of output) {
