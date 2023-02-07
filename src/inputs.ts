@@ -7,7 +7,10 @@ export const INPUTS = {
   pull_title: 'pull_title',
   pull_body: 'pull_body',
   assignee: 'assignee',
-  reviewer: 'reviewer'
+  reviewer: 'reviewer',
+  repository: 'repository',
+  github_token: 'github_token',
+  github_actor: 'github_actor'
 }
 
 export default INPUTS

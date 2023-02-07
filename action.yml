@@ -6,40 +6,52 @@ branding:
   color: gray-dark
 inputs:
   username:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Username of user, defaults to context github.repository_owner if omited'
     default: ${{ github.repository_owner }}
     required: false
   email:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Email of User, defaults to context "github-action[bot]@users.noreply.github.com" if omited'
     default: 'github-action[bot]@users.noreply.github.com'
     required: false
   temp_branch_name:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Repostory owner, defaults to context "php-cs-fix" if omited'
     default: 'php-cs-fix'
     required: false
   master_branch_name:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Master Branch Name, defaults to context github.ref_name if omited'
     default: ${{ github.ref_name }}
     required: false
   commit_message:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Commit Message, defaults to context "Automated Bot Deployment" if omited'
     default: 'Automated Bot Deployment'
     required: false
   pull_title:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Pull request title, defaults to context "Automated Bot Deployment" if omited'
     default: 'Automated Bot Deployment'
     required: false
   pull_body:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Pull request body text, defaults to "Update PH CS Fix Files" if omited'
     default: 'Update PH CS Fix Files'
     required: false
   assignee:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Pull request assignee, defaults to context github.repository_owner if omited'
     default: ${{ github.repository_owner }}
     required: false
   reviewer:
-    description: 'Repostory owner, defaults to context github.repository_owner if omited'
+    description: 'Pull request reviewer, defaults to context github.repository_owner if omited'
     default: ${{ github.repository_owner }}
+    required: false
+  repository:
+    description: 'Repository, defaults to context github.repository if omited'
+    default: ${{ github.repository }}
+    required: false
+  github_token:
+    description: 'Github Token, defaults to context secrets.GITHUB_TOKEN if omited'
+    default: ${{ secrets.GITHUB_TOKEN }}
+    required: false
+  github_actor:
+    description: 'Github Token, defaults to context secrets.GITHUB_ACTOR if omited'
+    default: ${{ secrets.GITHUB_ACTOR }}
     required: false
 runs:
   using: 'node16'
