@@ -233,19 +233,19 @@ function pushCommitAndMergePR(branch, message) {
         const files_to_change = yield addChanges(owner, repo, branch);
         if (files_to_change) {
             // 2. Create a pull request to merge the branch
-            const pullRequest = (yield octokit.pulls.create({
+            const pullRequestNumber = (yield octokit.pulls.create({
                 owner,
                 repo,
                 head: branch,
                 base: config.master_branch_name,
                 title: config.pull_title,
                 body: config.pull_body
-            })).data;
+            })).data.number;
             // 3. Merge the pull request
             yield octokit.pulls.merge({
                 owner,
                 repo,
-                pull_number: pullRequest.number,
+                pull_number: pullRequestNumber,
                 commit_title: config.commit_message,
                 merge_method: 'squash'
             });
