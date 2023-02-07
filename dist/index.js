@@ -101,6 +101,7 @@ function run() {
 }
 function addChanges(owner, repo, branch) {
     return __awaiter(this, void 0, void 0, function* () {
+        let files_to_change = false;
         try {
             const output = [];
             core.info('Step 1: Create composer.json');
@@ -150,6 +151,7 @@ function addChanges(owner, repo, branch) {
                     });
                     // core.info(`File updated: ${data.commit.sha}`)
                     core.info(`File updated`);
+                    files_to_change = true;
                 }
             }
             else {
@@ -163,6 +165,7 @@ function addChanges(owner, repo, branch) {
         catch (error) {
             core.info(error.message);
         }
+        return files_to_change;
     });
 }
 function updateReference(repo, ref, sha) {
@@ -216,34 +219,26 @@ function pushCommitAndMergePR(branch, message) {
             repo,
             branch: config.master_branch_name
         })).data.commit.sha);
-        addChanges(owner, repo, branch);
-        // 2. Create a new file in the branch
-        // const content = Buffer.from(message).toString('base64')
-        // await octokit.repos.createOrUpdateFileContents({
-        //   owner,
-        //   repo,
-        //   path: `${branch}/newfile.txt`,
-        //   message: `Add new file: ${branch}/newfile.txt ${new Date().toTimeString()}`,
-        //   content,
-        //   branch
-        // })
-        // 3. Create a pull request to merge the branch
-        const pullRequest = (yield octokit.pulls.create({
-            owner,
-            repo,
-            head: branch,
-            base: config.master_branch_name,
-            title: `Merge ${branch} into ${config.master_branch_name}`,
-            body: `This pull request merges branch \`${branch}\` into \`${config.master_branch_name}\`.`
-        })).data;
-        // 4. Merge the pull request
-        yield octokit.pulls.merge({
-            owner,
-            repo,
-            pull_number: pullRequest.number,
-            commit_title: `Merge pull request #${pullRequest.number}`,
-            merge_method: 'squash'
-        });
+        const files_to_change = yield addChanges(owner, repo, branch);
+        if (files_to_change) {
+            // 2. Create a pull request to merge the branch
+            const pullRequest = (yield octokit.pulls.create({
+                owner,
+                repo,
+                head: branch,
+                base: config.master_branch_name,
+                title: config.pull_title,
+                body: config.pull_body
+            })).data;
+            // 4. Merge the pull request
+            yield octokit.pulls.merge({
+                owner,
+                repo,
+                pull_number: pullRequest.number,
+                commit_title: config.commit_message,
+                merge_method: 'squash'
+            });
+        }
     });
 }
 run();

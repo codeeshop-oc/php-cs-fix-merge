@@ -76,7 +76,8 @@ async function addChanges(
   owner: string,
   repo: string,
   branch: string
-): Promise<void> {
+): Promise<boolean> {
+  let files_to_change = false
   try {
     const output = []
 
@@ -155,6 +156,8 @@ async function addChanges(
         })
         // core.info(`File updated: ${data.commit.sha}`)
         core.info(`File updated`)
+
+        files_to_change = true
       }
     } else {
       core.info(`No files changed`)
@@ -168,6 +171,8 @@ async function addChanges(
   } catch (error) {
     core.info((error as Error).message)
   }
+
+  return files_to_change
 }
 
 async function updateReference(
@@ -235,39 +240,30 @@ async function pushCommitAndMergePR(
     ).data.commit.sha
   )
 
-  addChanges(owner, repo, branch)
+  const files_to_change = await addChanges(owner, repo, branch)
 
-  // 2. Create a new file in the branch
-  // const content = Buffer.from(message).toString('base64')
-  // await octokit.repos.createOrUpdateFileContents({
-  //   owner,
-  //   repo,
-  //   path: `${branch}/newfile.txt`,
-  //   message: `Add new file: ${branch}/newfile.txt ${new Date().toTimeString()}`,
-  //   content,
-  //   branch
-  // })
+  if (files_to_change) {
+    // 2. Create a pull request to merge the branch
+    const pullRequest = (
+      await octokit.pulls.create({
+        owner,
+        repo,
+        head: branch,
+        base: config.master_branch_name,
+        title: config.pull_title,
+        body: config.pull_body
+      })
+    ).data
 
-  // 3. Create a pull request to merge the branch
-  const pullRequest = (
-    await octokit.pulls.create({
+    // 4. Merge the pull request
+    await octokit.pulls.merge({
       owner,
       repo,
-      head: branch,
-      base: config.master_branch_name,
-      title: `Merge ${branch} into ${config.master_branch_name}`,
-      body: `This pull request merges branch \`${branch}\` into \`${config.master_branch_name}\`.`
+      pull_number: pullRequest.number,
+      commit_title: config.commit_message,
+      merge_method: 'squash'
     })
-  ).data
-
-  // 4. Merge the pull request
-  await octokit.pulls.merge({
-    owner,
-    repo,
-    pull_number: pullRequest.number,
-    commit_title: `Merge pull request #${pullRequest.number}`,
-    merge_method: 'squash'
-  })
+  }
 }
 
 run()
