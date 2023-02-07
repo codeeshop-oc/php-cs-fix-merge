@@ -64,6 +64,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
+const fs = __importStar(__nccwpck_require__(5747));
 const github = __importStar(__nccwpck_require__(5438));
 const inputs_1 = __importDefault(__nccwpck_require__(6180));
 const child_process_1 = __nccwpck_require__(3129);
@@ -119,23 +120,30 @@ function addChanges(owner, repo, branch) {
             core.info('Step 6: Update Git Config');
             output.push((0, child_process_1.execSync)(`git config --global user.name "${config.username}"
       git config --global user.email "${config.email}"`));
-            // git add .
-            // execSync("php cs-fixer fix --diff", { stdio: "inherit" });
-            (0, child_process_1.execSync)('git add -A', { stdio: 'inherit' });
-            core.info(Buffer.from('CONTENT').toString());
-            for (const step of output) {
-                core.info(step.toString());
+            (0, child_process_1.execSync)('git add .', { stdio: 'inherit' });
+            // Get the changed files
+            const changedFiles = (0, child_process_1.execSync)('git diff --name-only HEAD')
+                .toString()
+                .split('\n')
+                .filter(Boolean);
+            if (changedFiles.length > 0) {
+                // Commit and push the changes
+                for (const file of changedFiles) {
+                    const { data } = yield octokit.repos.createOrUpdateFileContents({
+                        owner,
+                        repo,
+                        path: file,
+                        message: `Fixed ${file} using php-cs-fixer`,
+                        content: Buffer.from(fs.readFileSync(file).toString(), 'utf-8').toString('base64'),
+                        branch
+                    });
+                    core.info(`File updated: ${data.commit.sha}`);
+                }
             }
-            process.exit(0);
-            const { data } = yield octokit.repos.createOrUpdateFileContents({
-                owner,
-                repo,
-                path: 'FILE_PATH',
-                message: 'Fix coding standards with PHP CS',
-                content: Buffer.from('CONTENT').toString('base64'),
-                branch
-            });
-            core.info(`File updated: ${data.commit.sha}`);
+            // for (const step of output) {
+            //   core.info(step.toString())
+            // }
+            // process.exit(0)
         }
         catch (error) {
             core.info(error.message);
