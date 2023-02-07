@@ -96,8 +96,6 @@ function run() {
             core.info('Step 7: Check - Something To Commit ?');
             const output1 = (0, child_process_1.execSync)(`git diff --quiet --staged . || echo "changed"`);
             output.push(output1);
-            core.info('includes2');
-            core.info(output1.toString());
             if (output1.toString()) {
                 core.info('Step 8: Deleting Previous Branches');
                 output.push((0, child_process_1.execSync)(`git branch -D ${config.temp_branch_name} || echo
