@@ -185,9 +185,14 @@ function updateReference(repo, ref, sha) {
         }
     });
 }
-function createReference(owner, repo, ref, sha) {
+function createReference(owner, repo, ref, branch, sha) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            yield octokit.git.deleteRef({
+                owner,
+                repo,
+                ref: `heads/${branch}`,
+            });
             yield octokit.git.createRef({
                 owner,
                 repo,
@@ -214,7 +219,7 @@ function pushCommitAndMergePR(branch, message) {
         const repo = context.repo.repo;
         core.info(message);
         // 1. Create a new branch
-        yield createReference(owner, repo, `refs/heads/${branch}`, (yield octokit.repos.getBranch({
+        yield createReference(owner, repo, branch, `refs/heads/${branch}`, (yield octokit.repos.getBranch({
             owner,
             repo,
             branch: config.master_branch_name
