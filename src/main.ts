@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-// import * as cache from '@actions/cache'
 
 import INPUTS from './inputs'
 import {execSync} from 'child_process'
@@ -14,7 +13,9 @@ interface ENVS {
   pull_body: string
   assignee: string
   reviewer: string
-  File: string
+  repository: string
+  github_token: string
+  github_actor: string
 }
 
 export type ConfigEnv = Pick<
@@ -28,6 +29,9 @@ export type ConfigEnv = Pick<
   | 'pull_body'
   | 'assignee'
   | 'reviewer'
+  | 'repository'
+  | 'github_token'
+  | 'github_actor'
 >
 
 async function run(): Promise<void> {
@@ -43,6 +47,9 @@ async function run(): Promise<void> {
     config.pull_body = core.getInput(INPUTS.pull_body)
     config.assignee = core.getInput(INPUTS.assignee)
     config.reviewer = core.getInput(INPUTS.reviewer)
+    config.repository = core.getInput(INPUTS.repository)
+    config.github_token = core.getInput(INPUTS.github_token)
+    config.github_actor = core.getInput(INPUTS.github_actor)
 
     const output = []
 
@@ -69,6 +76,8 @@ async function run(): Promise<void> {
     core.info('Step 5: Run PHP-CS')
     output.push(execSync(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`))
 
+    core.info(`${config.username}`)
+    core.info(`${config.email}`)
     core.info('Step 6: Update Git Config')
     output.push(
       execSync(
@@ -84,10 +93,11 @@ async function run(): Promise<void> {
 
     if (output1.toString()) {
       core.info('Step 8: Deleting Previous Branches')
+      const branch_url = `https://${config.github_actor}:${config.github_token}@github.com/${config.repository}.git`
       output.push(
         execSync(
           `git branch -D ${config.temp_branch_name} || echo
-         git push -d origin ${config.temp_branch_name} || echo`
+         git push ${branch_url} ${config.temp_branch_name} || echo`
         )
       )
 

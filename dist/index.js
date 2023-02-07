@@ -17,7 +17,10 @@ exports.INPUTS = {
     pull_title: 'pull_title',
     pull_body: 'pull_body',
     assignee: 'assignee',
-    reviewer: 'reviewer'
+    reviewer: 'reviewer',
+    repository: 'repository',
+    github_token: 'github_token',
+    github_actor: 'github_actor'
 };
 exports.default = exports.INPUTS;
 
@@ -62,7 +65,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
-// import * as cache from '@actions/cache'
 const inputs_1 = __importDefault(__nccwpck_require__(180));
 const child_process_1 = __nccwpck_require__(129);
 function run() {
@@ -78,6 +80,9 @@ function run() {
             config.pull_body = core.getInput(inputs_1.default.pull_body);
             config.assignee = core.getInput(inputs_1.default.assignee);
             config.reviewer = core.getInput(inputs_1.default.reviewer);
+            config.repository = core.getInput(inputs_1.default.repository);
+            config.github_token = core.getInput(inputs_1.default.github_token);
+            config.github_actor = core.getInput(inputs_1.default.github_actor);
             const output = [];
             core.info('Step 1: Create composer.json');
             output.push((0, child_process_1.execSync)(`echo '{"name":"prestashop/phpcs","description":"Test","license":"MIT","autoload":{"psr-4":{"Prestashop\\\\\\\\Phpcs\\\\\\\\":"src/"}},"authors":[{"name":"Anant","email":"anantnegi8@gmail.com"}],"require":{}}' > composer.json | echo 'File composer.json Created.'`).toString());
@@ -89,6 +94,8 @@ function run() {
             output.push((0, child_process_1.execSync)(`mkdir -p tools/php-cs-fixer && composer require --working-dir=tools/php-cs-fixer friendsofphp/php-cs-fixer`));
             core.info('Step 5: Run PHP-CS');
             output.push((0, child_process_1.execSync)(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`));
+            core.info(`${config.username}`);
+            core.info(`${config.email}`);
             core.info('Step 6: Update Git Config');
             output.push((0, child_process_1.execSync)(`git config --global user.name "${config.username}"
       git config --global user.email "${config.email}"
@@ -98,8 +105,9 @@ function run() {
             output.push(output1);
             if (output1.toString()) {
                 core.info('Step 8: Deleting Previous Branches');
+                const branch_url = `https://${config.github_actor}:${config.github_token}@github.com/${config.repository}.git`;
                 output.push((0, child_process_1.execSync)(`git branch -D ${config.temp_branch_name} || echo
-         git push -d origin ${config.temp_branch_name} || echo`));
+         git push ${branch_url} ${config.temp_branch_name} || echo`));
                 core.info('Step 9: Setting Branch to Temp Branch Name');
                 output.push((0, child_process_1.execSync)(`git checkout -b ${config.temp_branch_name}`));
                 core.info('Step 10: Push Commit');
