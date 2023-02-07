@@ -197,12 +197,11 @@ async function deleteReference(
   branch: string
 ): Promise<void> {
   try {
-    const data = await octokit.git.deleteRef({
+    await octokit.git.deleteRef({
       owner,
       repo,
       ref: `heads/${branch}`
     })
-    core.info(JSON.stringify(data))
   } catch (error) {
     core.info((error as Error).message)
   }

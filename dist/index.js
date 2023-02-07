@@ -187,12 +187,11 @@ function getSHA(owner, repo) {
 function deleteReference(owner, repo, branch) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const data = yield octokit.git.deleteRef({
+            yield octokit.git.deleteRef({
                 owner,
                 repo,
                 ref: `heads/${branch}`
             });
-            core.info(JSON.stringify(data));
         }
         catch (error) {
             core.info(error.message);
