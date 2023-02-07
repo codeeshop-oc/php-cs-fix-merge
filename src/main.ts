@@ -82,7 +82,7 @@ async function run(): Promise<void> {
     const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
     output.push(output1)
 
-    core.info(output1.toString())
+    core.info('includes')
     if ([output1.toString()].includes('changed')) {
       core.info('Step 8: Deleting Previous Branches')
       output.push(
