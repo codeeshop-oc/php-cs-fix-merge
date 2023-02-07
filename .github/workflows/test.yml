@@ -25,4 +25,4 @@ jobs:
       - uses: ./
         with:
           temp_branch_name: 'fix-3'
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.github_token }}

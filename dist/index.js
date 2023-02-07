@@ -123,7 +123,9 @@ function pushCommitAndMergePR(repoToken, branch, message) {
         const context = github.context;
         const owner = context.repo.owner;
         const repo = context.repo.repo;
-        core.info(JSON.stringify(octokit));
+        core.info('=> repoToken');
+        core.info(repoToken);
+        core.info(message);
         // 1. Create a new branch
         yield octokit.git.createRef({
             owner,
@@ -136,15 +138,15 @@ function pushCommitAndMergePR(repoToken, branch, message) {
             })).data.commit.sha
         });
         // 2. Create a new file in the branch
-        const content = Buffer.from(message).toString('base64');
-        yield octokit.repos.createOrUpdateFileContents({
-            owner,
-            repo,
-            path: `${branch}/newfile.txt`,
-            message: `Add new file: ${branch}/newfile.txt`,
-            content,
-            branch
-        });
+        // const content = Buffer.from(message).toString('base64')
+        // await octokit.repos.createOrUpdateFileContents({
+        //   owner,
+        //   repo,
+        //   path: `${branch}/newfile.txt`,
+        //   message: `Add new file: ${branch}/newfile.txt`,
+        //   content,
+        //   branch
+        // })
         // 3. Create a pull request to merge the branch
         const pullRequest = (yield octokit.pulls.create({
             owner,

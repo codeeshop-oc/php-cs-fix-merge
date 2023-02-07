@@ -117,7 +117,9 @@ async function pushCommitAndMergePR(
   const context = github.context
   const owner = context.repo.owner
   const repo = context.repo.repo
-  core.info(JSON.stringify(octokit))
+  core.info('=> repoToken')
+  core.info(repoToken)
+  core.info(message)
   // 1. Create a new branch
   await octokit.git.createRef({
     owner,
@@ -133,15 +135,15 @@ async function pushCommitAndMergePR(
   })
 
   // 2. Create a new file in the branch
-  const content = Buffer.from(message).toString('base64')
-  await octokit.repos.createOrUpdateFileContents({
-    owner,
-    repo,
-    path: `${branch}/newfile.txt`,
-    message: `Add new file: ${branch}/newfile.txt`,
-    content,
-    branch
-  })
+  // const content = Buffer.from(message).toString('base64')
+  // await octokit.repos.createOrUpdateFileContents({
+  //   owner,
+  //   repo,
+  //   path: `${branch}/newfile.txt`,
+  //   message: `Add new file: ${branch}/newfile.txt`,
+  //   content,
+  //   branch
+  // })
 
   // 3. Create a pull request to merge the branch
   const pullRequest = (
