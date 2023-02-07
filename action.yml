@@ -1,5 +1,5 @@
-name: 'PHP CS Fix, Push & Merge'
-description: 'PHP CS Fix, Push & Merge'
+name: 'PHP CS Fix, Push and Merge'
+description: 'PHP CS Fix, Push and Merge'
 author: 'Anant Negi'
 branding:
   icon: file-text
