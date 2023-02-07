@@ -159,11 +159,12 @@ function addChanges(owner, repo, branch) {
         return files_to_change;
     });
 }
-function updateReference(repo, ref, sha) {
+function updateReference(owner, repo, ref) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            const sha = yield getSHA(owner, repo);
             yield octokit.git.updateRef({
-                owner: 'OWNER',
+                owner,
                 repo,
                 ref,
                 sha,
@@ -176,7 +177,16 @@ function updateReference(repo, ref, sha) {
         }
     });
 }
-function createReference(owner, repo, ref, branch, sha) {
+function getSHA(owner, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return (yield octokit.repos.getBranch({
+            owner,
+            repo,
+            branch: config.master_branch_name
+        })).data.commit.sha;
+    });
+}
+function createReference(owner, repo, ref, branch) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const data = yield octokit.git.deleteRef({
@@ -185,6 +195,7 @@ function createReference(owner, repo, ref, branch, sha) {
                 ref: `heads/${branch}`
             });
             core.info(JSON.stringify(data));
+            const sha = yield getSHA(owner, repo);
             yield octokit.git.createRef({
                 owner,
                 repo,
@@ -196,7 +207,7 @@ function createReference(owner, repo, ref, branch, sha) {
         catch (error) {
             if (error.message.includes('Reference already exists')) {
                 core.info(`Reference already exists: ${ref}`);
-                yield updateReference(repo, ref, sha);
+                yield updateReference(owner, repo, ref);
             }
             else {
                 core.info(error.message);
@@ -211,11 +222,7 @@ function pushCommitAndMergePR(branch, message) {
         const repo = context.repo.repo;
         core.info(message);
         // 1. Create a new branch
-        yield createReference(owner, repo, branch, `refs/heads/${branch}`, (yield octokit.repos.getBranch({
-            owner,
-            repo,
-            branch: config.master_branch_name
-        })).data.commit.sha);
+        yield createReference(owner, repo, branch, `refs/heads/${branch}`);
         const files_to_change = yield addChanges(owner, repo, branch);
         if (files_to_change) {
             // 2. Create a pull request to merge the branch

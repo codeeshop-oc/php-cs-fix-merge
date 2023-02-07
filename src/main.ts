@@ -164,13 +164,15 @@ async function addChanges(
 }
 
 async function updateReference(
+  owner: string,
   repo: string,
-  ref: string,
-  sha: string
+  ref: string
 ): Promise<void> {
   try {
+    const sha = await getSHA(owner, repo)
+
     await octokit.git.updateRef({
-      owner: 'OWNER',
+      owner,
       repo,
       ref,
       sha,
@@ -182,12 +184,21 @@ async function updateReference(
   }
 }
 
+async function getSHA(owner: string, repo: string): Promise<string> {
+  return (
+    await octokit.repos.getBranch({
+      owner,
+      repo,
+      branch: config.master_branch_name
+    })
+  ).data.commit.sha
+}
+
 async function createReference(
   owner: string,
   repo: string,
   ref: string,
-  branch: string,
-  sha: string
+  branch: string
 ): Promise<void> {
   try {
     const data = await octokit.git.deleteRef({
@@ -196,6 +207,8 @@ async function createReference(
       ref: `heads/${branch}`
     })
     core.info(JSON.stringify(data))
+
+    const sha = await getSHA(owner, repo)
 
     await octokit.git.createRef({
       owner,
@@ -207,7 +220,7 @@ async function createReference(
   } catch (error) {
     if ((error as Error).message.includes('Reference already exists')) {
       core.info(`Reference already exists: ${ref}`)
-      await updateReference(repo, ref, sha)
+      await updateReference(owner, repo, ref)
     } else {
       core.info((error as Error).message)
     }
@@ -223,19 +236,7 @@ async function pushCommitAndMergePR(
   const repo = context.repo.repo
   core.info(message)
   // 1. Create a new branch
-  await createReference(
-    owner,
-    repo,
-    branch,
-    `refs/heads/${branch}`,
-    (
-      await octokit.repos.getBranch({
-        owner,
-        repo,
-        branch: config.master_branch_name
-      })
-    ).data.commit.sha
-  )
+  await createReference(owner, repo, branch, `refs/heads/${branch}`)
 
   const files_to_change = await addChanges(owner, repo, branch)
 
@@ -252,7 +253,7 @@ async function pushCommitAndMergePR(
       })
     ).data
 
-    // 4. Merge the pull request
+    // 3. Merge the pull request
     await octokit.pulls.merge({
       owner,
       repo,
