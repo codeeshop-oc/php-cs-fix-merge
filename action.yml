@@ -46,12 +46,8 @@ inputs:
     default: ${{ github.repository }}
     required: false
   github_token:
-    description: 'Github Token, defaults to context secrets.GITHUB_TOKEN if omited'
-    default: ${{ secrets.GITHUB_TOKEN }}
-    required: false
-  github_actor:
-    description: 'Github Token, defaults to context secrets.GITHUB_ACTOR if omited'
-    default: ${{ secrets.GITHUB_ACTOR }}
+    description: 'Github Token, defaults to context github.token if omited'
+    default: ${{ github.token }}
     required: false
 runs:
   using: 'node16'

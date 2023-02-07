@@ -9,8 +9,7 @@ export const INPUTS = {
   assignee: 'assignee',
   reviewer: 'reviewer',
   repository: 'repository',
-  github_token: 'github_token',
-  github_actor: 'github_actor'
+  github_token: 'github_token'
 }
 
 export default INPUTS
