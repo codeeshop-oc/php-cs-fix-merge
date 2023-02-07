@@ -131,8 +131,6 @@ function addChanges(owner, repo, branch) {
                         ref: branch
                     });
                     const sha = data.sha;
-                    core.info('sha');
-                    core.info(sha);
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
@@ -186,7 +184,7 @@ function getSHA(owner, repo) {
         })).data.commit.sha;
     });
 }
-function createReference(owner, repo, ref, branch) {
+function deleteReference(owner, repo, branch) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const data = yield octokit.git.deleteRef({
@@ -195,6 +193,15 @@ function createReference(owner, repo, ref, branch) {
                 ref: `heads/${branch}`
             });
             core.info(JSON.stringify(data));
+        }
+        catch (error) {
+            core.info(error.message);
+        }
+    });
+}
+function createReference(owner, repo, ref) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
             const sha = yield getSHA(owner, repo);
             yield octokit.git.createRef({
                 owner,
@@ -222,7 +229,8 @@ function pushCommitAndMergePR(branch, message) {
         const repo = context.repo.repo;
         core.info(message);
         // 1. Create a new branch
-        yield createReference(owner, repo, branch, `refs/heads/${branch}`);
+        yield deleteReference(owner, repo, branch);
+        yield createReference(owner, repo, `refs/heads/${branch}`);
         const files_to_change = yield addChanges(owner, repo, branch);
         if (files_to_change) {
             // 2. Create a pull request to merge the branch
@@ -234,7 +242,7 @@ function pushCommitAndMergePR(branch, message) {
                 title: config.pull_title,
                 body: config.pull_body
             })).data;
-            // 4. Merge the pull request
+            // 3. Merge the pull request
             yield octokit.pulls.merge({
                 owner,
                 repo,
