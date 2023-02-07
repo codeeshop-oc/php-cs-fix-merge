@@ -133,27 +133,13 @@ async function addChanges(
           owner,
           repo,
           path: file,
-          ref: branch
+          ref: config.master_branch_name
         })
 
         const sha = (data as DataFile).sha
 
         core.info('sha')
         core.info(sha)
-        core.info(
-          JSON.stringify({
-            owner,
-            repo,
-            path: file,
-            message: `Fixed ${file} using php-cs-fixer`,
-            content: Buffer.from(
-              fs.readFileSync(file).toString(),
-              'utf-8'
-            ).toString('base64'),
-            sha,
-            branch
-          })
-        )
 
         await octokit.repos.createOrUpdateFileContents({
           owner,
@@ -249,7 +235,7 @@ async function pushCommitAndMergePR(
     ).data.commit.sha
   )
 
-  addChanges(owner, repo, branch)
+  await addChanges(owner, repo, branch)
 
   // 2. Create a new file in the branch
   // const content = Buffer.from(message).toString('base64')
