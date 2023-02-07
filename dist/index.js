@@ -128,6 +128,7 @@ function addChanges(owner, repo, branch) {
                 .filter(Boolean);
             if (changedFiles.length > 0) {
                 // Commit and push the changes
+                core.info(`File updated working till now`);
                 for (const file of changedFiles) {
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
@@ -138,7 +139,11 @@ function addChanges(owner, repo, branch) {
                         branch
                     });
                     // core.info(`File updated: ${data.commit.sha}`)
+                    core.info(`File updated`);
                 }
+            }
+            else {
+                core.info(`No files changed`);
             }
             // for (const step of output) {
             //   core.info(step.toString())
