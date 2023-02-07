@@ -129,7 +129,7 @@ function addChanges(owner, repo, branch) {
             if (changedFiles.length > 0) {
                 // Commit and push the changes
                 for (const file of changedFiles) {
-                    const { data } = yield octokit.repos.createOrUpdateFileContents({
+                    yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
                         path: file,
@@ -137,7 +137,7 @@ function addChanges(owner, repo, branch) {
                         content: Buffer.from(fs.readFileSync(file).toString(), 'utf-8').toString('base64'),
                         branch
                     });
-                    core.info(`File updated: ${data.commit.sha}`);
+                    // core.info(`File updated: ${data.commit.sha}`)
                 }
             }
             // for (const step of output) {

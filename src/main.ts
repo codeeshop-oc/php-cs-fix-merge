@@ -124,7 +124,7 @@ async function addChanges(
     if (changedFiles.length > 0) {
       // Commit and push the changes
       for (const file of changedFiles) {
-        const {data} = await octokit.repos.createOrUpdateFileContents({
+        await octokit.repos.createOrUpdateFileContents({
           owner,
           repo,
           path: file,
@@ -135,8 +135,7 @@ async function addChanges(
           ).toString('base64'),
           branch
         })
-
-        core.info(`File updated: ${data.commit.sha}`)
+        // core.info(`File updated: ${data.commit.sha}`)
       }
     }
 
