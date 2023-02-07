@@ -68,6 +68,7 @@ const fs = __importStar(__nccwpck_require__(5747));
 const github = __importStar(__nccwpck_require__(5438));
 const inputs_1 = __importDefault(__nccwpck_require__(6180));
 const child_process_1 = __nccwpck_require__(3129);
+;
 const config = {};
 config.username = core.getInput(inputs_1.default.username);
 config.email = core.getInput(inputs_1.default.email);
@@ -130,20 +131,20 @@ function addChanges(owner, repo, branch) {
                 // Commit and push the changes
                 core.info(`File updated working till now`);
                 for (const file of changedFiles) {
-                    const { data: fileInfo } = yield octokit.repos.getContent({
+                    const { data } = yield octokit.repos.getContent({
                         owner,
                         repo,
                         path: file,
                         ref: branch
                     });
-                    core.info('JSON.stringify(fileInfo)');
-                    core.info(JSON.stringify(fileInfo));
+                    const sha = data.type;
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
                         path: file,
                         message: `Fixed ${file} using php-cs-fixer`,
                         content: Buffer.from(fs.readFileSync(file).toString(), 'utf-8').toString('base64'),
+                        sha,
                         branch
                     });
                     // core.info(`File updated: ${data.commit.sha}`)

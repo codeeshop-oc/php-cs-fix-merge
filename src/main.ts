@@ -5,6 +5,11 @@ import * as github from '@actions/github'
 import INPUTS from './inputs'
 import {execSync} from 'child_process'
 
+interface DataFile {
+  sha: string
+  type: 'unknown'
+}
+
 interface ENVS {
   username: string
   email: string
@@ -125,15 +130,14 @@ async function addChanges(
       // Commit and push the changes
       core.info(`File updated working till now`)
       for (const file of changedFiles) {
-        const {data: fileInfo} = await octokit.repos.getContent({
+        const {data} = await octokit.repos.getContent({
           owner,
           repo,
           path: file,
           ref: branch
         })
 
-        core.info('JSON.stringify(fileInfo)')
-        core.info(JSON.stringify(fileInfo))
+        const sha = (data as DataFile).type
 
         await octokit.repos.createOrUpdateFileContents({
           owner,
@@ -144,6 +148,7 @@ async function addChanges(
             fs.readFileSync(file).toString(),
             'utf-8'
           ).toString('base64'),
+          sha,
           branch
         })
         // core.info(`File updated: ${data.commit.sha}`)
