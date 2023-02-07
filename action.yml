@@ -5,6 +5,14 @@ branding:
   icon: file-text
   color: gray-dark
 inputs:
+  github_token:
+    description: 'Github Token with commit access'
+    default: ${{ github.token }}
+    required: true
+  repository:
+    description: 'Repository, defaults to context github.repository if omited'
+    default: ${{ github.repository }}
+    required: false  
   username:
     description: 'Username of user, defaults to context github.repository_owner if omited'
     default: ${{ github.repository_owner }}
@@ -41,13 +49,6 @@ inputs:
     description: 'Pull request reviewer, defaults to context github.repository_owner if omited'
     default: ${{ github.repository_owner }}
     required: false
-  repository:
-    description: 'Repository, defaults to context github.repository if omited'
-    default: ${{ github.repository }}
-    required: false
-  github_token:
-    description: 'Github Token with commit access'
-    required: true  
 runs:
   using: 'node16'
   main: 'dist/index.js'

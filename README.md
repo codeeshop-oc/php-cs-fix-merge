@@ -17,6 +17,8 @@ See [action.yml](./action.yml)
 ```yaml
 - uses: codeeshop-oc/php-cs-fix-merge@1.0.0
   with: 
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    repository: ${{ github.repository }}
     username: codeeshop-oc
     email: github-action[bot]@users.noreply.github.com
     temp_branch_name: php-cs-fix
@@ -34,6 +36,10 @@ See [action.yml](./action.yml)
 github_token:
   description: 'Github Token with commit access'
   default: ${{ github.token }}
+  required: false
+repository:
+  description: 'Repository, defaults to context github.repository if omited'
+  default: ${{ github.repository }}
   required: false
 username:
   description: 'Username of user, defaults to context github.repository_owner if omited'
@@ -71,8 +77,36 @@ reviewer:
   description: 'Pull request reviewer, defaults to context github.repository_owner if omited'
   default: ${{ github.repository_owner }}
   required: false
-repository:
-  description: 'Repository, defaults to context github.repository if omited'
-  default: ${{ github.repository }}
-  required: false
+```
+
+
+### Known Issue
+
+When pushing to the same repository, the workflow may return the following error using the action:
+
+```
+remote: Permission to <owner>/<repository>.git denied to github-actions[bot].
+fatal: unable to access 'https://github.com/<owner>/<repository>/': The requested URL returned error: 403
+```
+
+This can be resolved by adding `persist-credentials: false` and `fetch-depth: 0` to the workflow configurations when using the `actions/checkout`.
+
+```yaml
+- uses: actions/checkout@v3
+  with:
+      persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of the personal access token.
+      fetch-depth: 0  # otherwise, there would be errors pushing refs to the destination repository.
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.0
+  with: 
+    github_token: ${{ secrets.GITHUB_TOKEN }}
+    repository: ${{ github.repository }}
+    username: codeeshop-oc
+    email: github-action[bot]@users.noreply.github.com
+    temp_branch_name: php-cs-fix
+    master_branch_name: main
+    commit_message: Automated Bot Deployment
+    pull_title: Automated Bot Deployment
+    pull_body: Update PH CS Fix Files
+    assignee: codeeshop-oc
+    reviewer: codeeshop-oc
 ```
