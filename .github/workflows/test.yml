@@ -24,4 +24,5 @@ jobs:
           fetch-depth: 0
       - uses: ./
         with:
-          temp_branch_name: 'fix-2'
+          temp_branch_name: 'fix-3'
+          github_token: ${{ github.token }}
