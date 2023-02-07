@@ -130,9 +130,6 @@ async function addChanges(
 
         const sha = (data as DataFile).sha
 
-        core.info('sha')
-        core.info(sha)
-
         await octokit.repos.createOrUpdateFileContents({
           owner,
           repo,
@@ -194,10 +191,9 @@ async function getSHA(owner: string, repo: string): Promise<string> {
   ).data.commit.sha
 }
 
-async function createReference(
+async function deleteReference(
   owner: string,
   repo: string,
-  ref: string,
   branch: string
 ): Promise<void> {
   try {
@@ -207,7 +203,17 @@ async function createReference(
       ref: `heads/${branch}`
     })
     core.info(JSON.stringify(data))
+  } catch (error) {
+    core.info((error as Error).message)
+  }
+}
 
+async function createReference(
+  owner: string,
+  repo: string,
+  ref: string
+): Promise<void> {
+  try {
     const sha = await getSHA(owner, repo)
 
     await octokit.git.createRef({
@@ -236,7 +242,8 @@ async function pushCommitAndMergePR(
   const repo = context.repo.repo
   core.info(message)
   // 1. Create a new branch
-  await createReference(owner, repo, branch, `refs/heads/${branch}`)
+  await deleteReference(owner, repo, branch)
+  await createReference(owner, repo, `refs/heads/${branch}`)
 
   const files_to_change = await addChanges(owner, repo, branch)
 
