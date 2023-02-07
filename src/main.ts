@@ -115,7 +115,7 @@ async function addChanges(
     // git add .
     // execSync("php cs-fixer fix --diff", { stdio: "inherit" });
     execSync('git add -A', {stdio: 'inherit'})
-    core.info(Buffer.from('CONTENT').toString('base64'))
+    core.info(Buffer.from('CONTENT').toString())
 
     for (const step of output) {
       core.info(step.toString())
