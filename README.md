@@ -2,7 +2,7 @@
 [![build-test](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml/badge.svg)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml)
 [![CodeQL](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/codeql-analysis.yml)
 
-Fix PHP CS Issues and Create Pull request and Merge if provide workflow permissions
+Fix PHP CS Issues and Create Pull request and Merge if provided proper [workflow permissions](../../settings/actions)
 
 ## Usage
 
@@ -30,12 +30,12 @@ See [action.yml](./action.yml)
     reviewer: codeeshop-oc
 ```
 
-#Inputs
+## Inputs
 
 ```yaml
 github_token:
   description: 'Github Token with commit access'
-  default: ${{ github.token }}
+  default: ${{ secrets.GITHUB_TOKEN }}
   required: false
 repository:
   description: 'Repository, defaults to context github.repository if omited'
