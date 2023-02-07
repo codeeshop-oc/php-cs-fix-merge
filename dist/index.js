@@ -129,19 +129,21 @@ function addChanges(owner, repo, branch) {
             if (changedFiles.length > 0) {
                 // Commit and push the changes
                 core.info(`File updated working till now`);
-                const sha = (yield octokit.repos.getBranch({
-                    owner,
-                    repo,
-                    branch: config.master_branch_name
-                })).data.commit.sha;
                 for (const file of changedFiles) {
+                    const { data: fileInfo } = yield octokit.repos.getContent({
+                        owner,
+                        repo,
+                        path: file,
+                        ref: branch
+                    });
+                    core.info('JSON.stringify(fileInfo)');
+                    core.info(JSON.stringify(fileInfo));
                     yield octokit.repos.createOrUpdateFileContents({
                         owner,
                         repo,
                         path: file,
                         message: `Fixed ${file} using php-cs-fixer`,
                         content: Buffer.from(fs.readFileSync(file).toString(), 'utf-8').toString('base64'),
-                        sha,
                         branch
                     });
                     // core.info(`File updated: ${data.commit.sha}`)
