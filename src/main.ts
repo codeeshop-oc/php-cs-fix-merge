@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as github from '@actions/github'
 
 import INPUTS from './inputs'
 import {execSync} from 'child_process'
@@ -32,22 +33,22 @@ export type ConfigEnv = Pick<
   | 'github_token'
 >
 
+const config: ConfigEnv = {} as ConfigEnv
+
+config.username = core.getInput(INPUTS.username)
+config.email = core.getInput(INPUTS.email)
+config.temp_branch_name = core.getInput(INPUTS.temp_branch_name)
+config.master_branch_name = core.getInput(INPUTS.master_branch_name)
+config.commit_message = core.getInput(INPUTS.commit_message)
+config.pull_title = core.getInput(INPUTS.pull_title)
+config.pull_body = core.getInput(INPUTS.pull_body)
+config.assignee = core.getInput(INPUTS.assignee)
+config.reviewer = core.getInput(INPUTS.reviewer)
+config.repository = core.getInput(INPUTS.repository)
+config.github_token = core.getInput(INPUTS.github_token)
+
 async function run(): Promise<void> {
   try {
-    const config: ConfigEnv = {} as ConfigEnv
-
-    config.username = core.getInput(INPUTS.username)
-    config.email = core.getInput(INPUTS.email)
-    config.temp_branch_name = core.getInput(INPUTS.temp_branch_name)
-    config.master_branch_name = core.getInput(INPUTS.master_branch_name)
-    config.commit_message = core.getInput(INPUTS.commit_message)
-    config.pull_title = core.getInput(INPUTS.pull_title)
-    config.pull_body = core.getInput(INPUTS.pull_body)
-    config.assignee = core.getInput(INPUTS.assignee)
-    config.reviewer = core.getInput(INPUTS.reviewer)
-    config.repository = core.getInput(INPUTS.repository)
-    config.github_token = core.getInput(INPUTS.github_token)
-
     const output = []
 
     core.info('Step 1: Create composer.json')
@@ -89,36 +90,11 @@ async function run(): Promise<void> {
     output.push(output1)
 
     if (output1.toString()) {
-      core.info('Step 8: Deleting Previous Branches')
-      output.push(
-        execSync(
-          `git remote add target https://${config.github_token}@github.com/${config.repository}.git
-          git fetch target
-          git branch -D ${config.temp_branch_name} || echo
-          git push -d target ${config.temp_branch_name} || echo`
-        )
-      )
-
-      core.info('Step 9: Setting Branch to Temp Branch Name')
-      output.push(execSync(`git checkout -b ${config.temp_branch_name}`))
-
-      core.info('Step 10: Push Commit')
-      output.push(
-        execSync(
-          `git commit -m "${config.commit_message}"
-          git push target ${config.temp_branch_name}`
-        )
-      )
-
-      core.info('Step 11: Merging')
-      output.push(
-        execSync(
-          `git checkout ${config.master_branch_name}
-        gh repo set-default ${config.username}
-        gh pr create --base ${config.master_branch_name} --head ${config.temp_branch_name} --title "${config.pull_title}" --body "${config.pull_body}" --reviewer ${config.assignee} --assignee ${config.reviewer}
-        gh pr merge ${config.temp_branch_name} -m --auto | echo
-        gh pr review ${config.temp_branch_name} --approve | echo`
-        )
+      core.info('Step 8: All')
+      await pushCommitAndMergePR(
+        config.github_token,
+        config.temp_branch_name,
+        config.commit_message
       )
     }
 
@@ -130,6 +106,63 @@ async function run(): Promise<void> {
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }
+}
+
+async function pushCommitAndMergePR(
+  repoToken: string,
+  branch: string,
+  message: string
+): Promise<void> {
+  const octokit = github.getOctokit(repoToken).rest
+  const context = github.context
+  const owner = context.repo.owner
+  const repo = context.repo.repo
+  core.info(JSON.stringify(octokit))
+  // 1. Create a new branch
+  await octokit.git.createRef({
+    owner,
+    repo,
+    ref: `refs/heads/${branch}`,
+    sha: (
+      await octokit.repos.getBranch({
+        owner,
+        repo,
+        branch: config.master_branch_name
+      })
+    ).data.commit.sha
+  })
+
+  // 2. Create a new file in the branch
+  const content = Buffer.from(message).toString('base64')
+  await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path: `${branch}/newfile.txt`,
+    message: `Add new file: ${branch}/newfile.txt`,
+    content,
+    branch
+  })
+
+  // 3. Create a pull request to merge the branch
+  const pullRequest = (
+    await octokit.pulls.create({
+      owner,
+      repo,
+      head: branch,
+      base: config.master_branch_name,
+      title: `Merge ${branch} into ${config.master_branch_name}`,
+      body: `This pull request merges branch \`${branch}\` into \`${config.master_branch_name}\`.`
+    })
+  ).data
+
+  // 4. Merge the pull request
+  await octokit.pulls.merge({
+    owner,
+    repo,
+    pull_number: pullRequest.number,
+    commit_title: `Merge pull request #${pullRequest.number}`,
+    merge_method: 'squash'
+  })
 }
 
 run()
