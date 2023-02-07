@@ -83,6 +83,24 @@ const octokit = github.getOctokit(config.github_token).rest;
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            // core.info('Step 7: Check - Something To Commit ?')
+            // const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
+            // output.push(output1)
+            // if (output1.toString()) {
+            //   core.info('Step 8: All')
+            // }
+            yield pushCommitAndMergePR(config.temp_branch_name, config.commit_message);
+            core.setOutput('time', new Date().toTimeString());
+        }
+        catch (error) {
+            if (error instanceof Error)
+                core.setFailed(error.message);
+        }
+    });
+}
+function addChanges(owner, repo, branch) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
             const output = [];
             core.info('Step 1: Create composer.json');
             output.push((0, child_process_1.execSync)(`echo '{"name":"prestashop/phpcs","description":"Test","license":"MIT","autoload":{"psr-4":{"Prestashop\\\\\\\\Phpcs\\\\\\\\":"src/"}},"authors":[{"name":"Anant","email":"anantnegi8@gmail.com"}],"require":{}}' > composer.json | echo 'File composer.json Created.'`).toString());
@@ -93,28 +111,34 @@ function run() {
             core.info('Step 4: Install PHP CS Fixer BundleTools');
             output.push((0, child_process_1.execSync)(`mkdir -p tools/php-cs-fixer && composer require --working-dir=tools/php-cs-fixer friendsofphp/php-cs-fixer`));
             core.info('Step 5: Run PHP-CS');
-            output.push((0, child_process_1.execSync)(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`));
+            output.push((0, child_process_1.execSync)(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`, {
+                stdio: 'inherit'
+            }));
             core.info(`${config.username}`);
             core.info(`${config.email}`);
             core.info('Step 6: Update Git Config');
             output.push((0, child_process_1.execSync)(`git config --global user.name "${config.username}"
-      git config --global user.email "${config.email}"
-      git add .`));
-            core.info('Step 7: Check - Something To Commit ?');
-            const output1 = (0, child_process_1.execSync)(`git diff --quiet --staged . || echo "changed"`);
-            output.push(output1);
-            if (output1.toString()) {
-                core.info('Step 8: All');
-                yield pushCommitAndMergePR(config.temp_branch_name, config.commit_message);
-            }
+      git config --global user.email "${config.email}"`));
+            // git add .
+            // execSync("php cs-fixer fix --diff", { stdio: "inherit" });
+            (0, child_process_1.execSync)('git add -A', { stdio: 'inherit' });
+            core.info(Buffer.from('CONTENT').toString('base64'));
             for (const step of output) {
                 core.info(step.toString());
             }
-            core.setOutput('time', new Date().toTimeString());
+            process.exit(0);
+            const { data } = yield octokit.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path: 'FILE_PATH',
+                message: 'Fix coding standards with PHP CS',
+                content: Buffer.from('CONTENT').toString('base64'),
+                branch
+            });
+            core.info(`File updated: ${data.commit.sha}`);
         }
         catch (error) {
-            if (error instanceof Error)
-                core.setFailed(error.message);
+            core.info(error.message);
         }
     });
 }
@@ -169,6 +193,7 @@ function pushCommitAndMergePR(branch, message) {
             repo,
             branch: config.master_branch_name
         })).data.commit.sha);
+        addChanges(owner, repo, branch);
         // 2. Create a new file in the branch
         const content = Buffer.from(message).toString('base64');
         yield octokit.repos.createOrUpdateFileContents({

@@ -51,6 +51,28 @@ const octokit = github.getOctokit(config.github_token).rest
 
 async function run(): Promise<void> {
   try {
+    // core.info('Step 7: Check - Something To Commit ?')
+    // const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
+    // output.push(output1)
+
+    // if (output1.toString()) {
+    //   core.info('Step 8: All')
+    // }
+
+    await pushCommitAndMergePR(config.temp_branch_name, config.commit_message)
+
+    core.setOutput('time', new Date().toTimeString())
+  } catch (error) {
+    if (error instanceof Error) core.setFailed(error.message)
+  }
+}
+
+async function addChanges(
+  owner: string,
+  repo: string,
+  branch: string
+): Promise<void> {
+  try {
     const output = []
 
     core.info('Step 1: Create composer.json')
@@ -74,7 +96,11 @@ async function run(): Promise<void> {
     )
 
     core.info('Step 5: Run PHP-CS')
-    output.push(execSync(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`))
+    output.push(
+      execSync(`tools/php-cs-fixer/vendor/bin/php-cs-fixer fix ./`, {
+        stdio: 'inherit'
+      })
+    )
 
     core.info(`${config.username}`)
     core.info(`${config.email}`)
@@ -82,27 +108,33 @@ async function run(): Promise<void> {
     output.push(
       execSync(
         `git config --global user.name "${config.username}"
-      git config --global user.email "${config.email}"
-      git add .`
+      git config --global user.email "${config.email}"`
       )
     )
 
-    core.info('Step 7: Check - Something To Commit ?')
-    const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
-    output.push(output1)
-
-    if (output1.toString()) {
-      core.info('Step 8: All')
-      await pushCommitAndMergePR(config.temp_branch_name, config.commit_message)
-    }
+    // git add .
+    // execSync("php cs-fixer fix --diff", { stdio: "inherit" });
+    execSync('git add -A', {stdio: 'inherit'})
+    core.info(Buffer.from('CONTENT').toString('base64'))
 
     for (const step of output) {
       core.info(step.toString())
     }
 
-    core.setOutput('time', new Date().toTimeString())
+    process.exit(0)
+
+    const {data} = await octokit.repos.createOrUpdateFileContents({
+      owner,
+      repo,
+      path: 'FILE_PATH',
+      message: 'Fix coding standards with PHP CS',
+      content: Buffer.from('CONTENT').toString('base64'),
+      branch
+    })
+
+    core.info(`File updated: ${data.commit.sha}`)
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    core.info((error as Error).message)
   }
 }
 
@@ -170,6 +202,8 @@ async function pushCommitAndMergePR(
       })
     ).data.commit.sha
   )
+
+  addChanges(owner, repo, branch)
 
   // 2. Create a new file in the branch
   const content = Buffer.from(message).toString('base64')
