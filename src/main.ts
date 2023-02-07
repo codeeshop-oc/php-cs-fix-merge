@@ -79,9 +79,10 @@ async function run(): Promise<void> {
     )
 
     core.info('Step 7: Check - Something To Commit ?')
-    output.push(execSync(`git diff --quiet --staged . || echo "changed"`))
+    const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
+    output.push(output1)
 
-    if (output[6] === 'changed') {
+    if (output1.toString() === 'changed') {
       core.info('Step 8: Deleting Previous Branches')
       output.push(
         execSync(
@@ -113,9 +114,7 @@ async function run(): Promise<void> {
       )
     }
 
-    let i = 0
     for (const step of output) {
-      core.info(String(i++))
       core.info(step.toString())
     }
 

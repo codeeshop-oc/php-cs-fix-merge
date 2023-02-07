@@ -94,8 +94,9 @@ function run() {
       git config --global user.email "${config.email}"
       git add .`));
             core.info('Step 7: Check - Something To Commit ?');
-            output.push((0, child_process_1.execSync)(`git diff --quiet --staged . || echo "changed"`));
-            if (output[6] === 'changed') {
+            const output1 = (0, child_process_1.execSync)(`git diff --quiet --staged . || echo "changed"`);
+            output.push(output1);
+            if (output1.toString() === 'changed') {
                 core.info('Step 8: Deleting Previous Branches');
                 output.push((0, child_process_1.execSync)(`git branch -D ${config.temp_branch_name} || echo
          git push -d origin ${config.temp_branch_name} || echo`));
@@ -111,9 +112,7 @@ function run() {
         gh pr merge ${config.temp_branch_name} -m --auto | echo
         gh pr review ${config.temp_branch_name} --approve | echo`));
             }
-            let i = 0;
             for (const step of output) {
-                core.info(String(i++));
                 core.info(step.toString());
             }
             core.setOutput('time', new Date().toTimeString());
