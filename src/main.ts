@@ -124,16 +124,17 @@ async function addChanges(
     if (changedFiles.length > 0) {
       // Commit and push the changes
       core.info(`File updated working till now`)
-
-      const sha = (
-        await octokit.repos.getBranch({
+      for (const file of changedFiles) {
+        const {data: fileInfo} = await octokit.repos.getContent({
           owner,
           repo,
-          branch: config.master_branch_name
+          path: file,
+          ref: branch
         })
-      ).data.commit.sha
 
-      for (const file of changedFiles) {
+        core.info('JSON.stringify(fileInfo)')
+        core.info(JSON.stringify(fileInfo))
+
         await octokit.repos.createOrUpdateFileContents({
           owner,
           repo,
@@ -143,7 +144,6 @@ async function addChanges(
             fs.readFileSync(file).toString(),
             'utf-8'
           ).toString('base64'),
-          sha,
           branch
         })
         // core.info(`File updated: ${data.commit.sha}`)
