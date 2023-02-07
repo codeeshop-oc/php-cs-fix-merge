@@ -10,13 +10,13 @@ See [action.yml](./action.yml)
 
 **Basic:**
 ```yaml
-- uses: codeeshop-oc/php-cs-fix-merge@1.0.0  
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.1
 ```
 
 **Full:**
 ```yaml
-- uses: codeeshop-oc/php-cs-fix-merge@1.0.0
-  with: 
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.1
+  with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     repository: ${{ github.repository }}
     username: codeeshop-oc
@@ -96,8 +96,8 @@ This can be resolved by adding `persist-credentials: false` and `fetch-depth: 0`
   with:
       persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of the personal access token.
       fetch-depth: 0  # otherwise, there would be errors pushing refs to the destination repository.
-- uses: codeeshop-oc/php-cs-fix-merge@1.0.0
-  with: 
+- uses: codeeshop-oc/php-cs-fix-merge@1.0.1
+  with:
     github_token: ${{ secrets.GITHUB_TOKEN }}
     repository: ${{ github.repository }}
     username: codeeshop-oc
