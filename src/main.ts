@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import * as fs from 'fs'
 import * as github from '@actions/github'
 
 import INPUTS from './inputs'
@@ -112,27 +113,38 @@ async function addChanges(
       )
     )
 
-    // git add .
-    // execSync("php cs-fixer fix --diff", { stdio: "inherit" });
-    execSync('git add -A', {stdio: 'inherit'})
-    core.info(Buffer.from('CONTENT').toString())
+    execSync('git add .', {stdio: 'inherit'})
 
-    for (const step of output) {
-      core.info(step.toString())
+    // Get the changed files
+    const changedFiles = execSync('git diff --name-only HEAD')
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+
+    if (changedFiles.length > 0) {
+      // Commit and push the changes
+      for (const file of changedFiles) {
+        const {data} = await octokit.repos.createOrUpdateFileContents({
+          owner,
+          repo,
+          path: file,
+          message: `Fixed ${file} using php-cs-fixer`,
+          content: Buffer.from(
+            fs.readFileSync(file).toString(),
+            'utf-8'
+          ).toString('base64'),
+          branch
+        })
+
+        core.info(`File updated: ${data.commit.sha}`)
+      }
     }
 
-    process.exit(0)
+    // for (const step of output) {
+    //   core.info(step.toString())
+    // }
 
-    const {data} = await octokit.repos.createOrUpdateFileContents({
-      owner,
-      repo,
-      path: 'FILE_PATH',
-      message: 'Fix coding standards with PHP CS',
-      content: Buffer.from('CONTENT').toString('base64'),
-      branch
-    })
-
-    core.info(`File updated: ${data.commit.sha}`)
+    // process.exit(0)
   } catch (error) {
     core.info((error as Error).message)
   }
