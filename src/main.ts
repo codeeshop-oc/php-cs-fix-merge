@@ -248,7 +248,7 @@ async function pushCommitAndMergePR(
 
   if (files_to_change) {
     // 2. Create a pull request to merge the branch
-    const pullRequest = (
+    const pullRequestNumber = (
       await octokit.pulls.create({
         owner,
         repo,
@@ -257,13 +257,13 @@ async function pushCommitAndMergePR(
         title: config.pull_title,
         body: config.pull_body
       })
-    ).data
+    ).data.number
 
     // 3. Merge the pull request
     await octokit.pulls.merge({
       owner,
       repo,
-      pull_number: pullRequest.number,
+      pull_number: pullRequestNumber,
       commit_title: config.commit_message,
       merge_method: 'squash'
     })
