@@ -32,8 +32,6 @@ export type ConfigEnv = Pick<
 
 async function run(): Promise<void> {
   try {
-    // core.info(`Running ${github.context.action}`);
-
     const config: ConfigEnv = {} as ConfigEnv
 
     config.username = core.getInput(INPUTS.username)
@@ -48,7 +46,6 @@ async function run(): Promise<void> {
 
     const output = []
 
-    core.info(`${config.temp_branch_name}`)
     core.info('Step 1: Create composer.json')
     output.push(
       execSync(
@@ -116,11 +113,11 @@ async function run(): Promise<void> {
       )
     }
 
+    let i = 0
     for (const step of output) {
+      core.info(String(i++))
       core.info(step.toString())
     }
-
-    core.info(JSON.stringify(output))
 
     core.setOutput('time', new Date().toTimeString())
   } catch (error) {
