@@ -135,15 +135,15 @@ async function pushCommitAndMergePR(
   })
 
   // 2. Create a new file in the branch
-  // const content = Buffer.from(message).toString('base64')
-  // await octokit.repos.createOrUpdateFileContents({
-  //   owner,
-  //   repo,
-  //   path: `${branch}/newfile.txt`,
-  //   message: `Add new file: ${branch}/newfile.txt`,
-  //   content,
-  //   branch
-  // })
+  const content = Buffer.from(message).toString('base64')
+  await octokit.repos.createOrUpdateFileContents({
+    owner,
+    repo,
+    path: `${branch}/newfile.txt`,
+    message: `Add new file: ${branch}/newfile.txt ${new Date().toTimeString()}`,
+    content,
+    branch
+  })
 
   // 3. Create a pull request to merge the branch
   const pullRequest = (
