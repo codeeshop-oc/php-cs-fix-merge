@@ -2,7 +2,11 @@
 [![build-test](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml/badge.svg)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml)
 [![CodeQL](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/codeql-analysis.yml)
 
-Fix PHP CS Issues and Create Pull request and Merge if provided proper [workflow permissions](../../settings/actions)
+Fix PHP CS Issues and Create Pull request and Merge 
+
+**Note:**
+Merge & Pull Request only works if you provide [workflow permissions](../../settings/actions)<br/>
+Tick Yes in Option: Allow GitHub Actions to create and approve pull requests
 
 ## Usage
 
