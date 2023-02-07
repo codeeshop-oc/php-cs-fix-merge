@@ -56,14 +56,6 @@ const octokit = github.getOctokit(config.github_token).rest
 
 async function run(): Promise<void> {
   try {
-    // core.info('Step 7: Check - Something To Commit ?')
-    // const output1 = execSync(`git diff --quiet --staged . || echo "changed"`)
-    // output.push(output1)
-
-    // if (output1.toString()) {
-    //   core.info('Step 8: All')
-    // }
-
     await pushCommitAndMergePR(config.temp_branch_name, config.commit_message)
 
     core.setOutput('time', new Date().toTimeString())
@@ -128,7 +120,6 @@ async function addChanges(
 
     if (changedFiles.length > 0) {
       // Commit and push the changes
-      core.info(`File updated working till now`)
       for (const file of changedFiles) {
         const {data} = await octokit.repos.getContent({
           owner,
@@ -155,21 +146,18 @@ async function addChanges(
           branch
         })
         // core.info(`File updated: ${data.commit.sha}`)
-        core.info(`File updated`)
 
         files_to_change = true
       }
     } else {
       core.info(`No files changed`)
     }
-
-    // for (const step of output) {
-    //   core.info(step.toString())
-    // }
-
-    // process.exit(0)
   } catch (error) {
     core.info((error as Error).message)
+  }
+
+  if (files_to_change) {
+    core.info(`Files updated in commit`)
   }
 
   return files_to_change
@@ -202,11 +190,12 @@ async function createReference(
   sha: string
 ): Promise<void> {
   try {
-    await octokit.git.deleteRef({
+    const data = await octokit.git.deleteRef({
       owner,
       repo,
       ref: `heads/${branch}`
     })
+    core.info(JSON.stringify(data))
 
     await octokit.git.createRef({
       owner,
