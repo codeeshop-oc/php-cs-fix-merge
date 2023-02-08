@@ -165,14 +165,13 @@ async function getAllowedPermissions(
   repo: string
 ): Promise<boolean> {
   try {
-    const data =
-      octokit.actions.getGithubActionsDefaultWorkflowPermissionsRepository({
-        owner,
-        repo
-      })
+    const {data: repository} = await octokit.repos.get({
+      owner,
+      repo
+    })
 
-    core.info('All Permissions')
-    core.info(JSON.stringify(data))
+    core.info(`Repository: ${repository.full_name}`)
+    core.info(`Permissions: ${repository.permissions}`)
   } catch (error) {
     core.info((error as Error).message)
   }

@@ -164,12 +164,12 @@ function addChanges(owner, repo, branch) {
 function getAllowedPermissions(owner, repo) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const data = octokit.actions.getGithubActionsDefaultWorkflowPermissionsRepository({
+            const { data: repository } = yield octokit.repos.get({
                 owner,
-                repo,
+                repo
             });
-            core.info('All Permissions');
-            core.info(JSON.stringify(data));
+            core.info(`Repository: ${repository.full_name}`);
+            core.info(`Permissions: ${repository.permissions}`);
         }
         catch (error) {
             core.info(error.message);
