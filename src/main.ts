@@ -160,6 +160,26 @@ async function addChanges(
   return files_to_change
 }
 
+async function getAllowedPermissions(
+  owner: string,
+  repo: string
+): Promise<boolean> {
+  try {
+    const data =
+      octokit.actions.getGithubActionsDefaultWorkflowPermissionsRepository({
+        owner,
+        repo
+      })
+
+    core.info('All Permissions')
+    core.info(JSON.stringify(data))
+  } catch (error) {
+    core.info((error as Error).message)
+  }
+
+  return true
+}
+
 async function updateReference(
   owner: string,
   repo: string,
@@ -241,6 +261,7 @@ async function pushCommitAndMergePR(
   const repo = context.repo.repo
   core.info(message)
   // 1. Create a new branch
+  await getAllowedPermissions(owner, repo)
   await deleteReference(owner, repo, branch)
   await createReference(owner, repo, `refs/heads/${branch}`)
 
