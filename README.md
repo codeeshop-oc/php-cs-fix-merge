@@ -1,5 +1,5 @@
 # php-cs-fix-merge
-[![build-test](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml)
+[![build-test](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml/badge.svg)](https://github.com/codeeshop-oc/php-cs-fix-merge/actions/workflows/test.yml)
 
 Fix PHP CS Issues and Create Pull request and Merge 
 
